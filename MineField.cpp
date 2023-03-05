@@ -1,5 +1,6 @@
 #include "MineField.h"
 
+#include <iostream>
 #include <sstream>
 
 /// <summary>
@@ -9,65 +10,115 @@
 /// <returns>Character representing cell value</returns>
 __forceinline char CellToChar(MineField::Cell cell)
 {
-	assert(cell >= MineField::Cell::EMPTY && cell <= MineField::Cell::MINE);
+	assert(cell >= MineField::Cell::EMPTY && cell <= MineField::Cell::CLOSED);
 
-	static const char* s_cellToChar = ".123456789M";
+	static const char* s_cellToChar = ".123456789M?";
 	return s_cellToChar[(int)cell];
 }
 
-void MineField::Init(unsigned int a_width, unsigned int a_height)
+void MineField::Init(unsigned int width, unsigned int height, unsigned int count, unsigned int seed)
 {
-	m_width = a_width;
-	m_height = a_height;
+	assert(width > 0 && width <= MAX_SIZE);
+	assert(height > 0 && height <= MAX_SIZE);
+	assert(count > 0 && count <= width * height);
+
+	m_width = width;
+	m_height = height;
 	m_numMines = 0;
+	m_numClosed = width * height;
+	m_failed = false;
 
 	m_cells.clear();
-	m_cells.resize(a_width * a_height, Cell::EMPTY);
-}
+	m_cells.resize(width * height, Cell::EMPTY);
 
-bool MineField::AddRandomMine()
-{
-	if (m_numMines >= m_width * m_height)
-		return false;
+	m_open.reset();
+	m_flags.reset();
 
-	while (!AddMine(rand() % m_width, rand() % m_height));
+	srand(seed != 0 ? seed : (int)time(NULL));
 
-	return true;
+	while (m_numMines < count)
+		AddMine(rand() % width, rand() % height);
 }
 
 bool MineField::AddMine(unsigned int x, unsigned int y)
 {
-	if (GetCellAt(x, y) == Cell::MINE)
+	if (IsMine(x, y))
 		return false;
 
-	SetCellAt(x, y, Cell::MINE);
-
-	// get bounds of surrounding cells
-	int mini = std::max<int>(x - 1, 0);
-	int minj = std::max<int>(y - 1, 0);
-	int maxi = std::min<int>(x + 1, m_width - 1);
-	int maxj = std::min<int>(y + 1, m_height - 1);
+	SetRawCellAt(x, y, Cell::MINE);
+	m_numMines++;
 
 	// increment mine count of surrounding cells
-	for (int j = minj; j <= maxj; ++j)
-		for (int i = mini; i <= maxi; ++i)
-			IncMineCount(i, j);
+	for (int j = (int)y - 1; j <= (int)y + 1; ++j)
+	{
+		for (int i = (int)x - 1; i <= (int)x + 1; ++i)
+		{
+			if (InBounds(i, j) && (i != x || j != y))
+				IncMineCount(i, j);
+		}
+	}
 
-	m_numMines++;
 	return true;
 }
 
-std::string MineField::toString() const
+bool MineField::IncMineCount(unsigned int x, unsigned int y)
+{
+	if (IsMine(x, y))
+		return false;
+
+	Cell cell = GetRawCellAt(x, y);
+	SetRawCellAt(x, y, Cell((int)cell + 1));
+	return true;
+}
+
+MineField::Cell MineField::Open(unsigned int x, unsigned int y)
+{
+	Cell cell = GetRawCellAt(x, y);
+	if (IsOpen(x, y) || IsFlagged(x, y))
+		return cell;
+
+	SetOpenAt(x, y);
+	m_numClosed--;
+
+	switch (cell)
+	{
+		case Cell::EMPTY:
+		{
+			// reveal surrounding cells
+			for (int j = (int)y - 1; j <= (int)y + 1; ++j)
+				for (int i = (int)x - 1; i <= (int)x + 1; ++i)
+					if (InBounds(i, j))
+						Open(i, j);
+
+			break;
+		}
+		case Cell::MINE:
+		{
+			// oh no!
+			m_failed = true;
+			break;
+		}
+	}
+
+	return cell;
+}
+
+std::string MineField::toString(bool reveal) const
 {
 	std::stringstream ss;
 
 	for (unsigned int y = 0; y < m_height; ++y)
 	{
 		for (unsigned int x = 0; x < m_width; ++x)
-			ss << CellToChar(GetCellAt(x, y));
+			ss << CellToChar(reveal ? GetRawCellAt(x, y) : GetCellAt(x, y)) << " ";
 
 		ss << "\n";
 	}
+
+	if (!reveal)
+		ss << "Mines: " << m_numMines << ", Closed: " << m_numClosed << ", Flagged: " << m_flags.count() << "\n";
+
+	ss << "\n";
 
 	return ss.str();
 }

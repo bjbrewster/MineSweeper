@@ -139,7 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MineField.cpp" />
     <ClCompile Include="MineSweeper.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MineField.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

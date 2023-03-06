@@ -20,8 +20,8 @@ void ShowTitle()
 void ShowUsage()
 {
     std::cout
-        << "Usage:\n  MineSweeper <WIDTH> <HEIGHT> <COUNT>\n"
-        << "\nWhere:\n"
+        << "Usage:\n  MineSweeper <WIDTH> <HEIGHT> <COUNT>\n\n"
+        << "Where:\n"
         << "  WIDTH  - width of the mine field from 1 to " << MineField::MAX_SIZE << "\n"
         << "  HEIGHT - height of the mine field from 1 to " << MineField::MAX_SIZE << "\n"
         << "  COUNT  - number of mines on the field from 1 to number of cells\n";
@@ -68,15 +68,24 @@ bool ParseArgs(unsigned int& width, unsigned int& height, unsigned int& count)
     return true;
 }
 
+/// <summary>
+/// Generates a mine field. 
+/// </summary>
+/// <param name="width">width of mine field</param>
+/// <param name="height">height of mine field</param>
+/// <param name="count">number of mines</param>
+/// <param name="field">IN mine field to update</param>
 void GenerateMineField(unsigned int width, unsigned int height, unsigned int count, MineField &field)
 {
     std::cout << "Generating " << width << "x" << height << " mine field with " << count << " mines\n\n";
 
+    // I moved mine field generation to the MineField class as part of its initialisation.
     field.Init(width, height, count);
 
     std::cout << field.toString(true);
 }
 
+/// Get random success message
 std::string GetSuccessMessage()
 {
     switch (rand() % 5)
@@ -90,6 +99,7 @@ std::string GetSuccessMessage()
     return "Success!";
 }
 
+/// Get random failed message
 std::string GetFailedMessage()
 {
     switch (rand() % 5)
@@ -103,6 +113,10 @@ std::string GetFailedMessage()
     return "Failed!";
 }
 
+/// <summary>
+/// Attempt to solve the given mine field.
+/// </summary>
+/// <param name="field">IN mine field to solve</param>
 void SolveMineField(MineField& field)
 {
     std::cout << "Solving " << field.Width() << "x" << field.Height() << " mine field\n\n";

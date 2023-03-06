@@ -110,7 +110,7 @@ std::string MineField::toString(bool reveal) const
 	for (unsigned int y = 0; y < m_height; ++y)
 	{
 		for (unsigned int x = 0; x < m_width; ++x)
-			ss << CellToChar(reveal ? GetRawCellAt(x, y) : GetCellAt(x, y)) << " ";
+			ss << (IsFlagged(x, y) ? '!' : CellToChar(reveal ? GetRawCellAt(x, y) : GetCellAt(x, y))) << " ";
 
 		ss << "\n";
 	}

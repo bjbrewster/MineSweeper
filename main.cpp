@@ -87,6 +87,7 @@ std::string GetSuccessMessage()
     case 3: return "Success! How did that hap... I mean I never doubted myself for a moment!";
     case 4: return "Success! 100% successful 14.38% of the time :D";
     }
+    return "Success!";
 }
 
 std::string GetFailedMessage()
@@ -96,9 +97,10 @@ std::string GetFailedMessage()
     case 0: return "Failed! Oh Noes!1!";
     case 1: return "Failed! We lost again?";
     case 2: return "Failed! This game is rigged, can we play TicTacToe instead?";
-    case 3: return "Failed! Maybe the next one will be easy? :/";
-    case 4: return "Failed! ¯\_(ツ)_/¯";
+    case 3: return "Failed! Maybe the next one will be easier? :/";
+    case 4: return "Failed! Oops! :P";
     }
+    return "Failed!";
 }
 
 void SolveMineField(MineField& field)

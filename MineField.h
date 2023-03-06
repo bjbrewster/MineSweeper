@@ -112,7 +112,6 @@ private:
 	unsigned int m_height;
 	unsigned int m_numMines;
 	unsigned int m_numClosed;
-	unsigned int m_numFlagged;
 	bool m_failed;
 
 	std::vector<Cell> m_cells;
